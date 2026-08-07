@@ -22,7 +22,11 @@
     .btn-clear { background: #ff3b30; color: white; flex: 0.5; }
     .status { text-align: center; font-size: 13px; color: #666; margin-top: 10px; }
     ul { list-style: none; margin-top: 10px; }
-    li { background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
+    li { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; position: relative; border: 1px solid #eee; }
+    .li-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .word-title { font-size: 16px; color: #007aff; font-weight: bold; }
+    .btn-del-single { background: #ff3b30; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; font-weight: normal; cursor: pointer; }
+    .detail-item { font-size: 13px; color: #555; margin-top: 4px; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -55,7 +59,7 @@
     <label>固定搭配 (Collocations)</label>
     <textarea id="collocations" placeholder="每行一条搭配"></textarea>
 
-    <label>例句 (Sentences)</label>
+    <label>例句/金句 (Sentences)</label>
     <textarea id="sentences" placeholder="每行一条例句"></textarea>
 
     <div class="btn-group">
@@ -68,11 +72,11 @@
     <div class="status" id="countStatus">当前标签 [默认] 已积累: 0 个单词</div>
     <div class="btn-group">
       <button class="btn-export" onclick="exportJSON()">导出当前标签 JSON</button>
-      <button class="btn-clear" onclick="clearCurrentTagData()">清空当前标签</button>
+      <button class="btn-clear" onclick="clearCurrentTagData()">清空所有</button>
     </div>
   </div>
 
-  <!-- 简易查看列表 -->
+  <!-- 查看与删除列表 -->
   <div class="card">
     <label id="listTitle">当前标签词条列表：</label>
     <ul id="wordList"></ul>
@@ -87,7 +91,7 @@
       renderList();
     };
 
-    // 获取所有标签，默认至少包含 "默认"
+    // 获取所有标签
     function getTags() {
       const tags = localStorage.getItem(STORAGE_TAGS_KEY);
       return tags ? JSON.parse(tags) : ['默认'];
@@ -176,7 +180,18 @@
       renderList();
     }
 
-    // 渲染当前标签的词条列表
+    // 新增：单条单词删除逻辑
+    function deleteSingleWord(originalIndex) {
+      const currentTag = getCurrentTag();
+      if (confirm("确定要删除这个单词吗？")) {
+        let words = getStoredWordsByTag(currentTag);
+        words.splice(originalIndex, 1);
+        localStorage.setItem(STORAGE_DATA_PREFIX + currentTag, JSON.stringify(words));
+        renderList();
+      }
+    }
+
+    // 渲染列表（带删除按钮和完整信息）
     function renderList() {
       const currentTag = getCurrentTag();
       const words = getStoredWordsByTag(currentTag);
@@ -186,14 +201,32 @@
 
       const listEl = document.getElementById('wordList');
       listEl.innerHTML = '';
-      words.slice().reverse().forEach(item => {
+
+      if (words.length === 0) {
+        listEl.innerHTML = '<li style="text-align:center; color:#999;">当前标签下暂无词条</li>';
+        return;
+      }
+
+      // 倒序展示最新的单词在最前面
+      words.slice().reverse().forEach((item, reverseIndex) => {
+        // 计算其在原数组中的实际索引
+        const originalIndex = words.length - 1 - reverseIndex;
         const li = document.createElement('li');
-        li.innerHTML = `<strong>${item.word}</strong> [${item.pos}] : ${item.meaning}`;
+        
+        li.innerHTML = `
+          <div class="li-header">
+            <span class="word-title">${item.word} <small style="color:#666; font-weight:normal;">[${item.pos || '未知'}]</small></span>
+            <button class="btn-del-single" onclick="deleteSingleWord(${originalIndex})">删除</button>
+          </div>
+          <div class="detail-item"><strong>释义:</strong> ${item.meaning || '无'}</div>
+          ${item.collocations && item.collocations.length > 0 ? `<div class="detail-item"><strong>搭配:</strong> ${item.collocations.join('; ')}</div>` : ''}
+          ${item.sentences && item.sentences.length > 0 ? `<div class="detail-item"><strong>例句:</strong> ${item.sentences.join('; ')}</div>` : ''}
+        `;
         listEl.appendChild(li);
       });
     }
 
-    // 独立导出当前标签的 JSON 文件，格式：YY-MM-DD-Tag名.json
+    // 独立导出当前标签 JSON
     function exportJSON() {
       const currentTag = getCurrentTag();
       const words = getStoredWordsByTag(currentTag);
@@ -208,17 +241,25 @@
       const dd = String(now.getDate()).padStart(2, '0');
       const dateStr = `${now.getFullYear()}-${mm}-${dd}`;
 
+      // 格式转换：适配 Python 模板需要的字段
+      const formattedWords = words.map(w => ({
+        word: w.word,
+        pos: w.pos,
+        meaning: w.meaning,
+        collocations: w.collocations || [],
+        continuation_sentences: w.sentences || [],
+        practical_writing_sentences: w.sentences || []
+      }));
+
       const jsonData = {
         title: `高考英语积累本 (${currentTag})`,
         export_date: dateStr,
         tag: currentTag,
-        total_count: words.length,
-        words: words
+        total_count: formattedWords.length,
+        words: formattedWords
       };
 
-      // 文件名格式 e.g. 26-08-07-核心词汇.json
       const fileName = `${yy}-${mm}-${dd}-${currentTag}.json`;
-
       const jsonString = JSON.stringify(jsonData, null, 2);
       const blob = new Blob([jsonString], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -239,7 +280,7 @@
     // 清空当前标签数据
     function clearCurrentTagData() {
       const currentTag = getCurrentTag();
-      if (confirm(`确定要清空标签【${currentTag}】下的所有单词吗？`)) {
+      if (confirm(`确定要清空标签【${currentTag}】下的所有单词吗？此操作无法撤销！`)) {
         localStorage.removeItem(STORAGE_DATA_PREFIX + currentTag);
         renderList();
       }
