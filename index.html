@@ -1,4 +1,70 @@
-<script>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高考英语词汇积累</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f5f5f7; color: #333; }
+    h2 { text-align: center; margin-bottom: 15px; color: #1d1d1f; }
+    .card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
+    label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 10px; margin-bottom: 4px; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; }
+    textarea { resize: vertical; height: 60px; }
+    .tip { font-size: 12px; color: #888; margin-top: 2px; }
+    .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+    button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+    .btn-add { background: #007aff; color: white; }
+    .btn-export { background: #34c759; color: white; }
+    .btn-clear { background: #ff3b30; color: white; flex: 0.5; }
+    .status { text-align: center; font-size: 13px; color: #666; margin-top: 10px; }
+    ul { list-style: none; margin-top: 10px; }
+    li { background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <h2>英语积累本</h2>
+
+  <!-- 录入表单 -->
+  <div class="card">
+    <label>单词/短语 (Word)</label>
+    <input type="text" id="word" placeholder="例如: overwhelm">
+
+    <label>词性 (POS)</label>
+    <input type="text" id="pos" placeholder="例如: vt. / n.">
+
+    <label>中文释义 (Meaning)</label>
+    <input type="text" id="meaning" placeholder="例如: (感情等) 压倒，使受打击">
+
+    <label>固定搭配 (Collocations)</label>
+    <textarea id="collocations" placeholder="每行一条搭配，例如：&#10;be overwhelmed with joy&#10;overwhelming support"></textarea>
+
+    <label>例句 (Sentences)</label>
+    <textarea id="sentences" placeholder="每行一条例句，例如：&#10;Overwhelmed by panic, my mind went blank.&#10;I was overwhelmed with gratitude."></textarea>
+
+    <div class="btn-group">
+      <button class="btn-add" onclick="addWord()">保存单词</button>
+    </div>
+  </div>
+
+  <!-- 统计与操作 -->
+  <div class="card">
+    <div class="status" id="countStatus">已积累: 0 个单词</div>
+    <div class="btn-group">
+      <button class="btn-export" onclick="exportJSON()">导出 JSON 文件</button>
+      <button class="btn-clear" onclick="clearData()">清空</button>
+    </div>
+  </div>
+
+  <!-- 历史简易列表 -->
+  <div class="card">
+    <label>本次已存列表：</label>
+    <ul id="wordList"></ul>
+  </div>
+
+  <script>
     const STORAGE_KEY = 'my_english_words';
 
     // 1. 页面加载时读取已存数据
@@ -105,3 +171,5 @@
       }
     }
   </script>
+</body>
+</html>
