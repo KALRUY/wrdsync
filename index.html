@@ -3,16 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>高考英语词汇积累</title>
+  <title>高考英语词汇积累本</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f5f5f7; color: #333; }
     h2 { text-align: center; margin-bottom: 15px; color: #1d1d1f; }
     .card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
     label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 10px; margin-bottom: 4px; }
-    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; }
+    input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; background: #fff; }
     textarea { resize: vertical; height: 60px; }
-    .tip { font-size: 12px; color: #888; margin-top: 2px; }
+    .tag-manager { display: flex; gap: 8px; margin-top: 5px; }
+    .tag-manager input { flex: 1; }
+    .tag-manager button { flex: 0 0 70px; background: #34c759; color: white; border: none; border-radius: 8px; font-weight: bold; }
     .btn-group { display: flex; gap: 10px; margin-top: 15px; }
     button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
     .btn-add { background: #007aff; color: white; }
@@ -27,6 +29,18 @@
 
   <h2>英语积累本</h2>
 
+  <!-- 标签管理与选择 -->
+  <div class="card">
+    <label>当前词组标签 (Group Tag)</label>
+    <select id="tagSelect" onchange="switchTag()"></select>
+    
+    <label>新建词组标签</label>
+    <div class="tag-manager">
+      <input type="text" id="newTagName" placeholder="输入新标签名，例如：核心词汇/熟词生义">
+      <button onclick="createTag()">新建</button>
+    </div>
+  </div>
+
   <!-- 录入表单 -->
   <div class="card">
     <label>单词/短语 (Word)</label>
@@ -39,47 +53,99 @@
     <input type="text" id="meaning" placeholder="例如: (感情等) 压倒，使受打击">
 
     <label>固定搭配 (Collocations)</label>
-    <textarea id="collocations" placeholder="每行一条搭配，例如：&#10;be overwhelmed with joy&#10;overwhelming support"></textarea>
+    <textarea id="collocations" placeholder="每行一条搭配"></textarea>
 
     <label>例句 (Sentences)</label>
-    <textarea id="sentences" placeholder="每行一条例句，例如：&#10;Overwhelmed by panic, my mind went blank.&#10;I was overwhelmed with gratitude."></textarea>
+    <textarea id="sentences" placeholder="每行一条例句"></textarea>
 
     <div class="btn-group">
-      <button class="btn-add" onclick="addWord()">保存单词</button>
+      <button class="btn-add" onclick="addWord()">保存到当前标签</button>
     </div>
   </div>
 
-  <!-- 统计与操作 -->
+  <!-- 当前标签统计与导出 -->
   <div class="card">
-    <div class="status" id="countStatus">已积累: 0 个单词</div>
+    <div class="status" id="countStatus">当前标签 [默认] 已积累: 0 个单词</div>
     <div class="btn-group">
-      <button class="btn-export" onclick="exportJSON()">导出 JSON 文件</button>
-      <button class="btn-clear" onclick="clearData()">清空</button>
+      <button class="btn-export" onclick="exportJSON()">导出当前标签 JSON</button>
+      <button class="btn-clear" onclick="clearCurrentTagData()">清空当前标签</button>
     </div>
   </div>
 
-  <!-- 历史简易列表 -->
+  <!-- 简易查看列表 -->
   <div class="card">
-    <label>本次已存列表：</label>
+    <label id="listTitle">当前标签词条列表：</label>
     <ul id="wordList"></ul>
   </div>
 
   <script>
-    const STORAGE_KEY = 'my_english_words';
+    const STORAGE_TAGS_KEY = 'my_english_tags_list';
+    const STORAGE_DATA_PREFIX = 'my_english_words_tag_';
 
-    // 1. 页面加载时读取已存数据
     window.onload = function() {
+      initTags();
       renderList();
     };
 
-    // 获取本地数据
-    function getStoredWords() {
-      const data = localStorage.getItem(STORAGE_KEY);
+    // 获取所有标签，默认至少包含 "默认"
+    function getTags() {
+      const tags = localStorage.getItem(STORAGE_TAGS_KEY);
+      return tags ? JSON.parse(tags) : ['默认'];
+    }
+
+    // 初始化标签下拉框
+    function initTags() {
+      const tags = getTags();
+      const select = document.getElementById('tagSelect');
+      select.innerHTML = '';
+      tags.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.innerText = t;
+        select.appendChild(opt);
+      });
+    }
+
+    // 获取当前选中的标签
+    function getCurrentTag() {
+      return document.getElementById('tagSelect').value || '默认';
+    }
+
+    // 获取指定标签的数据
+    function getStoredWordsByTag(tagName) {
+      const data = localStorage.getItem(STORAGE_DATA_PREFIX + tagName);
       return data ? JSON.parse(data) : [];
     }
 
-    // 2. 保存单词到 localStorage
+    // 切换标签
+    function switchTag() {
+      renderList();
+    }
+
+    // 创建新标签
+    function createTag() {
+      const input = document.getElementById('newTagName');
+      const newTag = input.value.trim();
+      if (!newTag) {
+        alert('请输入新标签名称！');
+        return;
+      }
+      const tags = getTags();
+      if (tags.includes(newTag)) {
+        alert('该标签已存在！');
+        return;
+      }
+      tags.push(newTag);
+      localStorage.setItem(STORAGE_TAGS_KEY, JSON.stringify(tags));
+      input.value = '';
+      initTags();
+      document.getElementById('tagSelect').value = newTag;
+      renderList();
+    }
+
+    // 添加单词到当前选中的标签
     function addWord() {
+      const currentTag = getCurrentTag();
       const word = document.getElementById('word').value.trim();
       const pos = document.getElementById('pos').value.trim();
       const meaning = document.getElementById('meaning').value.trim();
@@ -96,11 +162,11 @@
 
       const newEntry = { word, pos, meaning, collocations, sentences };
 
-      const words = getStoredWords();
+      const words = getStoredWordsByTag(currentTag);
       words.push(newEntry);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+      localStorage.setItem(STORAGE_DATA_PREFIX + currentTag, JSON.stringify(words));
 
-      // 清空表单
+      // 清空输入框
       document.getElementById('word').value = '';
       document.getElementById('pos').value = '';
       document.getElementById('meaning').value = '';
@@ -108,14 +174,17 @@
       document.getElementById('sentences').value = '';
 
       renderList();
-      alert('保存成功！');
+      alert(`已保存到标签【${currentTag}】！`);
     }
 
-    // 3. 渲染已存单词列表
+    // 渲染当前标签的词条列表
     function renderList() {
-      const words = getStoredWords();
-      document.getElementById('countStatus').innerText = `已积累: ${words.length} 个单词`;
+      const currentTag = getCurrentTag();
+      const words = getStoredWordsByTag(currentTag);
       
+      document.getElementById('countStatus').innerText = `当前标签 [${currentTag}] 已积累: ${words.length} 个单词`;
+      document.getElementById('listTitle').innerText = `【${currentTag}】标签词条列表：`;
+
       const listEl = document.getElementById('wordList');
       listEl.innerHTML = '';
       words.slice().reverse().forEach(item => {
@@ -125,48 +194,54 @@
       });
     }
 
-    // 4. 导出为 JSON 文件（完美兼容 iOS Safari 触发下载）
+    // 独立导出当前标签的 JSON 文件，格式：YY-MM-DD-Tag名.json
     function exportJSON() {
-      const words = getStoredWords();
+      const currentTag = getCurrentTag();
+      const words = getStoredWordsByTag(currentTag);
       if (words.length === 0) {
-        alert('还没有积累任何单词，无法导出！');
+        alert(`标签【${currentTag}】下没有任何单词，无法导出！`);
         return;
       }
 
       const now = new Date();
-      const export_date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const yy = String(now.getFullYear()).slice(-2);
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const dateStr = `${now.getFullYear()}-${mm}-${dd}`;
 
       const jsonData = {
-        title: "高考英语积累本",
-        export_date: export_date,
+        title: `高考英语积累本 (${currentTag})`,
+        export_date: dateStr,
+        tag: currentTag,
         total_count: words.length,
         words: words
       };
 
-      // 关键修复：使用 Blob + URL.createObjectURL 适配 iOS Safari 下载机制
+      // 文件名格式 e.g. 26-08-07-核心词汇.json
+      const fileName = `${yy}-${mm}-${dd}-${currentTag}.json`;
+
       const jsonString = JSON.stringify(jsonData, null, 2);
       const blob = new Blob([jsonString], { type: "application/json" });
       const url = URL.createObjectURL(blob);
 
       const downloadAnchor = document.createElement('a');
       downloadAnchor.href = url;
-      downloadAnchor.download = `words_${export_date}.json`;
-      
-      // 必须添加到 DOM 中并在移动端触发点击
+      downloadAnchor.download = fileName;
+
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
-      
-      // 延迟清理
+
       setTimeout(() => {
         document.body.removeChild(downloadAnchor);
         URL.revokeObjectURL(url);
       }, 100);
     }
 
-    // 5. 清空本地数据
-    function clearData() {
-      if (confirm('确定要清空手机上的已存单词吗？请确保已经导出并同步到电脑！')) {
-        localStorage.removeItem(STORAGE_KEY);
+    // 清空当前标签数据
+    function clearCurrentTagData() {
+      const currentTag = getCurrentTag();
+      if (confirm(`确定要清空标签【${currentTag}】下的所有单词吗？`)) {
+        localStorage.removeItem(STORAGE_DATA_PREFIX + currentTag);
         renderList();
       }
     }
