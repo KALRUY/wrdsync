@@ -6,30 +6,146 @@
   <title>英语词汇积累本</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f5f5f7; color: #333; }
-    h2 { text-align: center; margin-bottom: 15px; color: #1d1d1f; }
-    .card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-    label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 10px; margin-bottom: 4px; }
-    input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; background: #fff; }
-    textarea { resize: vertical; height: 60px; }
-    .pair-group { display: flex; gap: 8px; margin-bottom: 8px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+      background: #ffffff;
+      color: #2c2c2c;
+      line-height: 1.55;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1f1f1f;
+      font-weight: 600;
+    }
+    .card {
+      background: #ffffff;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid #e8e8e8;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      margin-bottom: 16px;
+    }
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #444;
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 5px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #dcdcdc;
+      border-radius: 6px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.2s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #0071e3;
+    }
+    textarea {
+      resize: vertical;
+      height: 64px;
+    }
+    .pair-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
     .pair-group input { flex: 1; }
-    .tag-manager { display: flex; gap: 8px; margin-top: 5px; }
+    .tag-manager {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
     .tag-manager input { flex: 1; }
-    .tag-manager button { flex: 0 0 70px; background: #34c759; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-    button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
-    .btn-add { background: #007aff; color: white; }
-    .btn-export { background: #34c759; color: white; }
-    .btn-clear { background: #ff3b30; color: white; flex: 0.5; }
-    .status { text-align: center; font-size: 13px; color: #666; margin-top: 10px; }
-    ul { list-style: none; margin-top: 10px; }
-    li { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border: 1px solid #eee; }
-    .li-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .word-title { font-size: 16px; color: #007aff; font-weight: bold; }
-    .btn-del-single { background: #ff3b30; color: white; border: none; border-radius: 4px; width: 50px; height: 26px; font-size: 12px; font-weight: normal; cursor: pointer; }
-    .detail-item { font-size: 13px; color: #555; margin-top: 4px; line-height: 1.4; }
-    .tag-badge { display: inline-block; background: #e5e5ea; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
+    .tag-manager button {
+      flex: 0 0 72px;
+      background: #30c157;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .tag-manager button:hover { opacity: 0.9; }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    button:hover { opacity: 0.92; }
+    .btn-add { background: #0071e3; color: white; }
+    .btn-export { background: #30c157; color: white; }
+    .btn-clear { background: #ff453a; color: white; flex: 0.5; }
+    .status {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+    ul { list-style: none; margin-top: 12px; }
+    li {
+      background: #fafafa;
+      padding: 14px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      border: 1px solid #eeeeee;
+      transition: background 0.2s;
+    }
+    li:hover {
+      background: #f5f8fc;
+    }
+    .li-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .word-title {
+      font-size: 16px;
+      color: #0071e3;
+      font-weight: 600;
+    }
+    /* 删除按钮固定矩形，禁止拉伸 */
+    .btn-del-single {
+      background: #ff453a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 70px;
+      height: 32px;
+      font-size: 12px;
+      font-weight: normal;
+      cursor: pointer;
+      flex: none !important;
+      transition: opacity 0.2s;
+    }
+    .btn-del-single:hover { opacity: 0.9; }
+    .detail-item {
+      font-size: 13px;
+      color: #444;
+      margin-top: 5px;
+      line-height: 1.55;
+    }
   </style>
 </head>
 <body>
@@ -72,9 +188,6 @@
     <div class="pair-group">
       <textarea id="sentCn" placeholder="例句翻译"></textarea>
     </div>
-
-    <label>标签 (Tags)</label>
-    <input type="text" id="tags" placeholder="多标签用逗号或空格分隔 (例如: 面部表情, 喜悦/自豪)">
 
     <div class="btn-group">
       <button class="btn-add" onclick="addWord()">保存到当前分类</button>
@@ -167,17 +280,11 @@
       const sentEn = document.getElementById('sentEn').value.trim();
       const sentCn = document.getElementById('sentCn').value.trim();
 
-      const tagsRaw = document.getElementById('tags').value.trim();
-
       if (!word) {
         alert('请输入单词！');
         return;
       }
 
-      // 拆分标签
-      const tags = tagsRaw ? tagsRaw.split(/[,，\s]+/).filter(t => t) : [];
-
-      // 构建搭配与例句的字典对象
       const collocations = (colEn || colCn) ? [{ en: colEn, cn: colCn }] : [];
       const sentences = (sentEn || sentCn) ? [{ en: sentEn, cn: sentCn }] : [];
 
@@ -186,8 +293,7 @@
         pos,
         meaning,
         collocations,
-        sentences,
-        tags
+        sentences
       };
 
       const words = getStoredWordsByTag(currentTag);
@@ -202,7 +308,6 @@
       document.getElementById('colCn').value = '';
       document.getElementById('sentEn').value = '';
       document.getElementById('sentCn').value = '';
-      document.getElementById('tags').value = '';
 
       renderList();
     }
@@ -242,10 +347,6 @@
           ? item.sentences.map(s => `${s.en} [${s.cn}]`).join('; ') 
           : '无';
 
-        let tagsHtml = (item.tags && item.tags.length > 0)
-          ? item.tags.map(t => `<span class="tag-badge">${t}</span>`).join('')
-          : '';
-
         li.innerHTML = `
           <div class="li-header">
             <span class="word-title">${item.word} <small style="color:#666; font-weight:normal;">[${item.pos || '未知'}]</small></span>
@@ -254,7 +355,6 @@
           <div class="detail-item"><strong>释义:</strong> ${item.meaning || '无'}</div>
           ${colText !== '无' ? `<div class="detail-item"><strong>搭配:</strong> ${colText}</div>` : ''}
           ${sentText !== '无' ? `<div class="detail-item"><strong>例句:</strong> ${sentText}</div>` : ''}
-          ${tagsHtml ? `<div class="detail-item" style="margin-top:6px;">${tagsHtml}</div>` : ''}
         `;
         listEl.appendChild(li);
       });
@@ -268,7 +368,6 @@
         return;
       }
 
-      // 严格按照你要求的结构进行封装
       const jsonData = {
         words: words
       };
