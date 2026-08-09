@@ -12,9 +12,11 @@
     label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 10px; margin-bottom: 4px; }
     input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; background: #fff; }
     textarea { resize: vertical; height: 60px; }
+    .pair-group { display: flex; gap: 8px; margin-bottom: 8px; }
+    .pair-group input { flex: 1; }
     .tag-manager { display: flex; gap: 8px; margin-top: 5px; }
     .tag-manager input { flex: 1; }
-    .tag-manager button { flex: 0 0 70px; background: #34c759; color: white; border: none; border-radius: 8px; font-weight: bold; }
+    .tag-manager button { flex: 0 0 70px; background: #34c759; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-group { display: flex; gap: 10px; margin-top: 15px; }
     button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
     .btn-add { background: #007aff; color: white; }
@@ -22,11 +24,12 @@
     .btn-clear { background: #ff3b30; color: white; flex: 0.5; }
     .status { text-align: center; font-size: 13px; color: #666; margin-top: 10px; }
     ul { list-style: none; margin-top: 10px; }
-    li { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; position: relative; border: 1px solid #eee; }
+    li { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border: 1px solid #eee; }
     .li-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .word-title { font-size: 16px; color: #007aff; font-weight: bold; }
-    .btn-del-single { background: #ff3b30; color: white; border: none; border-radius: 4px; width: 50px; height: 26px; padding: 0; flex: none; font_size: 12px; font-weight: normal; cursor: pointer }
+    .btn-del-single { background: #ff3b30; color: white; border: none; border-radius: 4px; width: 50px; height: 26px; font-size: 12px; font-weight: normal; cursor: pointer; }
     .detail-item { font-size: 13px; color: #555; margin-top: 4px; line-height: 1.4; }
+    .tag-badge { display: inline-block; background: #e5e5ea; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
   </style>
 </head>
 <body>
@@ -35,12 +38,12 @@
 
   <!-- 标签管理与选择 -->
   <div class="card">
-    <label>当前词组标签 (Group Tag)</label>
+    <label>当前词组分类 (Group Tag)</label>
     <select id="tagSelect" onchange="switchTag()"></select>
     
-    <label>新建词组标签</label>
+    <label>新建词组分类</label>
     <div class="tag-manager">
-      <input type="text" id="newTagName" placeholder="输入新标签名">
+      <input type="text" id="newTagName" placeholder="输入新分类名">
       <button onclick="createTag()">新建</button>
     </div>
   </div>
@@ -48,37 +51,48 @@
   <!-- 录入表单 -->
   <div class="card">
     <label>单词/短语 (Word)</label>
-    <input type="text" id="word" placeholder="输入单词">
+    <input type="text" id="word" placeholder="例如: beam">
 
     <label>词性 (POS)</label>
-    <input type="text" id="pos" placeholder="例如: vt. / n.">
+    <input type="text" id="pos" placeholder="例如: vi./n.">
 
     <label>中文释义 (Meaning)</label>
-    <input type="text" id="meaning" placeholder="输入释义">
+    <input type="text" id="meaning" placeholder="例如: 眉开眼笑，灿烂地笑；发光">
 
-    <label>固定搭配 (Collocations)</label>
-    <textarea id="collocations" placeholder="每行一条搭配"></textarea>
+    <label>固定搭配 (Collocation)</label>
+    <div class="pair-group">
+      <input type="text" id="colEn" placeholder="英文搭配 (如: beam with delight/pride)">
+      <input type="text" id="colCn" placeholder="中文翻译 (如: 露出欣喜/骄傲的笑容)">
+    </div>
 
-    <label>例句/金句 (Sentences)</label>
-    <textarea id="sentences" placeholder="每行一条例句"></textarea>
+    <label>例句/金句 (Sentence)</label>
+    <div class="pair-group">
+      <textarea id="sentEn" placeholder="英文例句"></textarea>
+    </div>
+    <div class="pair-group">
+      <textarea id="sentCn" placeholder="例句翻译"></textarea>
+    </div>
+
+    <label>标签 (Tags)</label>
+    <input type="text" id="tags" placeholder="多标签用逗号或空格分隔 (例如: 面部表情, 喜悦/自豪)">
 
     <div class="btn-group">
-      <button class="btn-add" onclick="addWord()">保存到当前标签</button>
+      <button class="btn-add" onclick="addWord()">保存到当前分类</button>
     </div>
   </div>
 
-  <!-- 当前标签统计与导出 -->
+  <!-- 当前分类统计与导出 -->
   <div class="card">
-    <div class="status" id="countStatus">当前标签 [默认] 已积累: 0 个单词</div>
+    <div class="status" id="countStatus">当前分类 [默认] 已积累: 0 个单词</div>
     <div class="btn-group">
-      <button class="btn-export" onclick="exportJSON()">导出当前标签 JSON</button>
+      <button class="btn-export" onclick="exportJSON()">导出当前分类 JSON</button>
       <button class="btn-clear" onclick="clearCurrentTagData()">清空所有</button>
     </div>
   </div>
 
   <!-- 查看与删除列表 -->
   <div class="card">
-    <label id="listTitle">当前标签词条列表：</label>
+    <label id="listTitle">当前分类词条列表：</label>
     <ul id="wordList"></ul>
   </div>
 
@@ -91,13 +105,11 @@
       renderList();
     };
 
-    // 获取所有标签
     function getTags() {
       const tags = localStorage.getItem(STORAGE_TAGS_KEY);
       return tags ? JSON.parse(tags) : ['默认'];
     }
 
-    // 初始化标签下拉框
     function initTags() {
       const tags = getTags();
       const select = document.getElementById('tagSelect');
@@ -110,33 +122,29 @@
       });
     }
 
-    // 获取当前选中的标签
     function getCurrentTag() {
       return document.getElementById('tagSelect').value || '默认';
     }
 
-    // 获取指定标签的数据
     function getStoredWordsByTag(tagName) {
       const data = localStorage.getItem(STORAGE_DATA_PREFIX + tagName);
       return data ? JSON.parse(data) : [];
     }
 
-    // 切换标签
     function switchTag() {
       renderList();
     }
 
-    // 创建新标签
     function createTag() {
       const input = document.getElementById('newTagName');
       const newTag = input.value.trim();
       if (!newTag) {
-        alert('请输入新标签名称！');
+        alert('请输入新分类名称！');
         return;
       }
       const tags = getTags();
       if (tags.includes(newTag)) {
-        alert('该标签已存在！');
+        alert('该分类已存在！');
         return;
       }
       tags.push(newTag);
@@ -147,40 +155,58 @@
       renderList();
     }
 
-    // 添加单词到当前选中的标签
     function addWord() {
       const currentTag = getCurrentTag();
       const word = document.getElementById('word').value.trim();
       const pos = document.getElementById('pos').value.trim();
       const meaning = document.getElementById('meaning').value.trim();
-      const collocationsRaw = document.getElementById('collocations').value.trim();
-      const sentencesRaw = document.getElementById('sentences').value.trim();
+      
+      const colEn = document.getElementById('colEn').value.trim();
+      const colCn = document.getElementById('colCn').value.trim();
+      
+      const sentEn = document.getElementById('sentEn').value.trim();
+      const sentCn = document.getElementById('sentCn').value.trim();
+
+      const tagsRaw = document.getElementById('tags').value.trim();
 
       if (!word) {
         alert('请输入单词！');
         return;
       }
 
-      const collocations = collocationsRaw ? collocationsRaw.split('\n').filter(item => item.trim() !== '') : [];
-      const sentences = sentencesRaw ? sentencesRaw.split('\n').filter(item => item.trim() !== '') : [];
+      // 拆分标签
+      const tags = tagsRaw ? tagsRaw.split(/[,，\s]+/).filter(t => t) : [];
 
-      const newEntry = { word, pos, meaning, collocations, sentences };
+      // 构建搭配与例句的字典对象
+      const collocations = (colEn || colCn) ? [{ en: colEn, cn: colCn }] : [];
+      const sentences = (sentEn || sentCn) ? [{ en: sentEn, cn: sentCn }] : [];
+
+      const newEntry = {
+        word,
+        pos,
+        meaning,
+        collocations,
+        sentences,
+        tags
+      };
 
       const words = getStoredWordsByTag(currentTag);
       words.push(newEntry);
       localStorage.setItem(STORAGE_DATA_PREFIX + currentTag, JSON.stringify(words));
 
-      // 清空输入框
+      // 清空表单
       document.getElementById('word').value = '';
       document.getElementById('pos').value = '';
       document.getElementById('meaning').value = '';
-      document.getElementById('collocations').value = '';
-      document.getElementById('sentences').value = '';
+      document.getElementById('colEn').value = '';
+      document.getElementById('colCn').value = '';
+      document.getElementById('sentEn').value = '';
+      document.getElementById('sentCn').value = '';
+      document.getElementById('tags').value = '';
 
       renderList();
     }
 
-    // 新增：单条单词删除逻辑
     function deleteSingleWord(originalIndex) {
       const currentTag = getCurrentTag();
       let words = getStoredWordsByTag(currentTag);
@@ -189,75 +215,65 @@
       renderList();
     }
 
-    // 渲染列表（带删除按钮和完整信息）
     function renderList() {
       const currentTag = getCurrentTag();
       const words = getStoredWordsByTag(currentTag);
       
-      document.getElementById('countStatus').innerText = `当前标签 [${currentTag}] 已积累: ${words.length} 个单词`;
-      document.getElementById('listTitle').innerText = `【${currentTag}】标签词条列表：`;
+      document.getElementById('countStatus').innerText = `当前分类 [${currentTag}] 已积累: ${words.length} 个单词`;
+      document.getElementById('listTitle').innerText = `【${currentTag}】词条列表：`;
 
       const listEl = document.getElementById('wordList');
       listEl.innerHTML = '';
 
       if (words.length === 0) {
-        listEl.innerHTML = '<li style="text-align:center; color:#999;">当前标签下暂无词条</li>';
+        listEl.innerHTML = '<li style="text-align:center; color:#999;">当前分类下暂无词条</li>';
         return;
       }
 
-      // 倒序展示最新的单词在最前面
       words.slice().reverse().forEach((item, reverseIndex) => {
-        // 计算其在原数组中的实际索引
         const originalIndex = words.length - 1 - reverseIndex;
         const li = document.createElement('li');
         
+        let colText = (item.collocations && item.collocations.length > 0) 
+          ? item.collocations.map(c => `${c.en} (${c.cn})`).join('; ') 
+          : '无';
+
+        let sentText = (item.sentences && item.sentences.length > 0) 
+          ? item.sentences.map(s => `${s.en} [${s.cn}]`).join('; ') 
+          : '无';
+
+        let tagsHtml = (item.tags && item.tags.length > 0)
+          ? item.tags.map(t => `<span class="tag-badge">${t}</span>`).join('')
+          : '';
+
         li.innerHTML = `
           <div class="li-header">
             <span class="word-title">${item.word} <small style="color:#666; font-weight:normal;">[${item.pos || '未知'}]</small></span>
             <button class="btn-del-single" onclick="deleteSingleWord(${originalIndex})">删除</button>
           </div>
           <div class="detail-item"><strong>释义:</strong> ${item.meaning || '无'}</div>
-          ${item.collocations && item.collocations.length > 0 ? `<div class="detail-item"><strong>搭配:</strong> ${item.collocations.join('; ')}</div>` : ''}
-          ${item.sentences && item.sentences.length > 0 ? `<div class="detail-item"><strong>例句:</strong> ${item.sentences.join('; ')}</div>` : ''}
+          ${colText !== '无' ? `<div class="detail-item"><strong>搭配:</strong> ${colText}</div>` : ''}
+          ${sentText !== '无' ? `<div class="detail-item"><strong>例句:</strong> ${sentText}</div>` : ''}
+          ${tagsHtml ? `<div class="detail-item" style="margin-top:6px;">${tagsHtml}</div>` : ''}
         `;
         listEl.appendChild(li);
       });
     }
 
-    // 独立导出当前标签 JSON
     function exportJSON() {
       const currentTag = getCurrentTag();
       const words = getStoredWordsByTag(currentTag);
       if (words.length === 0) {
-        alert(`标签【${currentTag}】下没有任何单词，无法导出！`);
+        alert(`分类【${currentTag}】下没有任何单词，无法导出！`);
         return;
       }
 
-      const now = new Date();
-      const yy = String(now.getFullYear()).slice(-2);
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const dateStr = `${now.getFullYear()}-${mm}-${dd}`;
-
-      // 格式转换：适配 Python 模板需要的字段
-      const formattedWords = words.map(w => ({
-        word: w.word,
-        pos: w.pos,
-        meaning: w.meaning,
-        collocations: w.collocations || [],
-        continuation_sentences: w.sentences || [],
-        practical_writing_sentences: w.sentences || []
-      }));
-
+      // 严格按照你要求的结构进行封装
       const jsonData = {
-        title: `高考英语积累本 (${currentTag})`,
-        export_date: dateStr,
-        tag: currentTag,
-        total_count: formattedWords.length,
-        words: formattedWords
+        words: words
       };
 
-      const fileName = `${yy}-${mm}-${dd}-${currentTag}.json`;
+      const fileName = `${currentTag}.json`;
       const jsonString = JSON.stringify(jsonData, null, 2);
       const blob = new Blob([jsonString], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -275,10 +291,9 @@
       }, 100);
     }
 
-    // 清空当前标签数据
     function clearCurrentTagData() {
       const currentTag = getCurrentTag();
-      if (confirm(`确定要清空标签【${currentTag}】下的所有单词吗？此操作无法撤销！`)) {
+      if (confirm(`确定要清空分类【${currentTag}】下的所有单词吗？此操作无法撤销！`)) {
         localStorage.removeItem(STORAGE_DATA_PREFIX + currentTag);
         renderList();
       }
